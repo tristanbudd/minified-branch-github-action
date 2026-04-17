@@ -77,7 +77,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: tristanbudd/minified-branch-github-action@master
+      - uses: tristanbudd/minified-branch-github-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           target_branch: 'production'
@@ -87,7 +87,7 @@ jobs:
 ### Advanced Configuration (PHP & Custom Directories)
 
 ```yaml
-- uses: tristanbudd/minified-branch-github-action@master
+- uses: tristanbudd/minified-branch-github-action@main
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     source_dir: 'public/assets'
