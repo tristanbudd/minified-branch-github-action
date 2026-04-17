@@ -5,8 +5,10 @@ const { walk } = require('../fs/walk');
 const { read } = require('../fs/read');
 const { write } = require('../fs/write');
 const { copy } = require('../fs/copy');
+const { remove } = require('../fs/remove');
 const { minifyCss } = require('./css');
 const { minifyJs } = require('./javascript');
+const { rewriteLinks } = require('./rewrite');
 
 const formatBytes = (bytes) => {
   if (bytes === 0 || isNaN(bytes)) return '0 B';
@@ -20,19 +22,19 @@ const processPipeline = async (type, extension, minifierFn, sourceDir) => {
   console.log(`--- Starting ${type} Pipeline ---`);
 
   const files = await walk(sourceDir, extension);
-
   const targetFiles = files.filter(
-    (f) => !f.endsWith(`.min${extension}`) && !f.includes('.config.'),
+    (f) => !f.endsWith(`.min${extension}`) && !f.includes('.config.') && !f.endsWith('.backup'),
   );
 
   if (targetFiles.length === 0) {
     console.log(`No unminified ${extension} files found. Skipping.`);
-    return;
+    return [];
   }
 
   let totalSaved = 0;
   let successCount = 0;
   let failCount = 0;
+  const mappings = [];
 
   await Promise.all(
     targetFiles.map(async (filePath) => {
@@ -46,8 +48,10 @@ const processPipeline = async (type, extension, minifierFn, sourceDir) => {
         const minFilePath = filePath.replace(new RegExp(`${extension}$`), `.min${extension}`);
 
         await copy(filePath, `${filePath}.backup`);
-
         await write(minFilePath, minifiedContent);
+        await remove(filePath);
+
+        mappings.push({ original: filePath, updated: minFilePath });
 
         const saved = originalSize - newSize;
         const percent = originalSize > 0 ? ((saved / originalSize) * 100).toFixed(1) : 0;
@@ -66,26 +70,37 @@ const processPipeline = async (type, extension, minifierFn, sourceDir) => {
   console.log(`--- ${type} Pipeline Summary ---`);
   console.log(`Processed: ${successCount} successful, ${failCount} failed.`);
   console.log(`Total space saved: ${formatBytes(totalSaved)}\n`);
+
+  return mappings;
 };
 
 const runBuild = async () => {
   const inputs = getInputs();
   const start = performance.now();
+  let allMappings = [];
 
   console.log(
     `Build Settings - CSS: ${inputs.minifyCss ? 'ON' : 'OFF'}, JS: ${inputs.minifyJs ? 'ON' : 'OFF'}\n`,
   );
 
   if (inputs.minifyCss) {
-    await processPipeline('CSS', '.css', minifyCss, inputs.sourceDir);
+    const cssMappings = await processPipeline('CSS', '.css', minifyCss, inputs.sourceDir);
+    allMappings = allMappings.concat(cssMappings);
   } else {
     console.log('Skipping CSS Pipeline...\n');
   }
 
   if (inputs.minifyJs) {
-    await processPipeline('JavaScript', '.js', minifyJs, inputs.sourceDir);
+    const jsMappings = await processPipeline('JavaScript', '.js', minifyJs, inputs.sourceDir);
+    allMappings = allMappings.concat(jsMappings);
   } else {
     console.log('Skipping JavaScript Pipeline...\n');
+  }
+
+  if (allMappings.length > 0) {
+    console.log('--- Rewriting Links in HTML/PHP Files ---');
+    await rewriteLinks(inputs.sourceDir, allMappings);
+    console.log(`Successfully rewrote links for ${allMappings.length} assets.\n`);
   }
 
   const end = performance.now();
