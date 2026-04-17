@@ -19,8 +19,12 @@ const formatBytes = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-const generateHash = (content) => {
-  return crypto.createHash('md5').update(content).digest('hex').slice(0, 8);
+const generateHash = (content, filePath) => {
+  return crypto
+    .createHash('md5')
+    .update(content + filePath)
+    .digest('hex')
+    .slice(0, 8);
 };
 
 const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) => {
@@ -52,7 +56,7 @@ const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) =
 
         let minFileName = `.min${extension}`;
         if (inputs.hashFiles) {
-          const hash = generateHash(minifiedContent);
+          const hash = generateHash(minifiedContent, filePath);
           minFileName = `.${hash}.min${extension}`;
         }
 

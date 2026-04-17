@@ -4,13 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a702ab42-3cf5-41db-8126-c7f5a3ce5c1f" name="Changes" comment="Ensure clean slate every new push. (Remove deleted files)">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/test.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/test.yml" afterDir="false" />
+    <list default="true" id="a702ab42-3cf5-41db-8126-c7f5a3ce5c1f" name="Changes" comment="Hash file configuration option.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action.yml" beforeDir="false" afterPath="$PROJECT_DIR$/action.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/inputs.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/inputs.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pipeline/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/build.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pipeline/rewrite.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/rewrite.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -166,7 +162,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776426913874</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Hash file configuration option.">
+      <option name="closed" value="true" />
+      <created>1776427496328</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1776427496328</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -193,7 +197,8 @@
     <MESSAGE value="Remvoe original file, attempt fix rewriting links." />
     <MESSAGE value="Existing file / backup file configuration options." />
     <MESSAGE value="Ensure clean slate every new push. (Remove deleted files)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ensure clean slate every new push. (Remove deleted files)" />
+    <MESSAGE value="Hash file configuration option." />
+    <option name="LAST_COMMIT_MESSAGE" value="Hash file configuration option." />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
