@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const { getInputs } = require('../config/inputs');
 const { walk } = require('../fs/walk');
 const { read } = require('../fs/read');
@@ -16,6 +17,10 @@ const formatBytes = (bytes) => {
   const sizes = ['B', 'KB', 'MB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+const generateHash = (content) => {
+  return crypto.createHash('md5').update(content).digest('hex').slice(0, 8);
 };
 
 const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) => {
@@ -45,7 +50,13 @@ const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) =
         const minifiedContent = await minifierFn(originalContent);
         const newSize = Buffer.byteLength(minifiedContent, 'utf8');
 
-        const minFilePath = filePath.replace(new RegExp(`${extension}$`), `.min${extension}`);
+        let minFileName = `.min${extension}`;
+        if (inputs.hashFiles) {
+          const hash = generateHash(minifiedContent);
+          minFileName = `.${hash}.min${extension}`;
+        }
+
+        const minFilePath = filePath.replace(new RegExp(`${extension}$`), minFileName);
 
         if (inputs.generateBackupFile) {
           await copy(filePath, `${filePath}.backup`);

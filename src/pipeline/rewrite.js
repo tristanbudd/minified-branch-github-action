@@ -24,14 +24,15 @@ const rewriteLinks = async (sourceDir, mappings) => {
         const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const safeOriginalName = escapeRegExp(originalName);
 
-        const regex = new RegExp(`(["'])(.*?)(${safeOriginalName})(\\?.*?)?\\1`, 'g');
+        const regex = new RegExp(`(["'])(?:.*?/)?${safeOriginalName}(\\?.*?)?\\1`, 'g');
 
         if (regex.test(content)) {
-          content = content.replace(regex, (match, p1, p2, p3, p4) => {
-            const query = p4 || '';
-            return `${p1}${p2}${updatedName}${query}${p1}`;
+          content = content.replace(regex, (match, quote, query) => {
+            modified = true;
+            const dirMatch = match.match(new RegExp(`${quote}(.*?)${safeOriginalName}`));
+            const prefix = dirMatch ? dirMatch[1] : '';
+            return `${quote}${prefix}${updatedName}${query || ''}${quote}`;
           });
-          modified = true;
         }
       }
 

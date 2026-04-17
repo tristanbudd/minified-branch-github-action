@@ -32,6 +32,8 @@ const getInputs = () => {
 
       keepOriginalFile: parseBoolean(core.getInput('keep_original_file'), false),
       generateBackupFile: parseBoolean(core.getInput('generate_backup_file'), true),
+
+      hashFiles: parseBoolean(core.getInput('hash_files'), false),
     };
 
     if (inputs.sourceDir.startsWith('/')) {

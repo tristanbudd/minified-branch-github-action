@@ -47,6 +47,10 @@ inputs:
     description: 'Generate a .backup file for the original asset'
     required: false
     default: 'true'
+  hash_files:
+    description: 'Append a content hash to minified filenames (e.g., style.abcdef12.min.css)'
+    required: false
+    default: 'false'
 
 runs:
   using: 'node20'
