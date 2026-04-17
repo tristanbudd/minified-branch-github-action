@@ -1,0 +1,33 @@
+name: 'Minified Branch Builder'
+description: 'Minifies CSS & JS and pushes them to a dedicated production branch, rewriting asset links.'
+author: 'Tristan Budd'
+
+inputs:
+  github_token:
+    description: 'GitHub token for pushing the new branch'
+    required: true
+    default: ${{ github.token }}
+  target_branch:
+    description: 'The branch to push minified code to'
+    required: false
+    default: 'production'
+  source_dir:
+    description: 'The root directory to scan for CSS/JS'
+    required: false
+    default: '.'
+  commit_message:
+    description: 'Commit message for the minified branch'
+    required: false
+    default: 'chore: automated asset minification'
+  minify_css:
+    description: 'Enable CSS minification (true/false)'
+    required: false
+    default: 'true'
+  minify_js:
+    description: 'Enable JavaScript minification (true/false)'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
