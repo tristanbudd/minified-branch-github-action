@@ -6,6 +6,14 @@ const { getInputs } = require('./config/inputs');
 const { runBuild } = require('./pipeline/build');
 const { pushToBranch } = require('./github/branch');
 
+/**
+ * Main function that orchestrates the entire action workflow.
+ * It reads inputs, runs the minification pipeline, pushes changes to the target branch,
+ * and sets outputs for use in subsequent steps. It also handles errors gracefully and logs
+ * detailed information about the process.
+ *
+ * @returns {Promise<void>}
+ */
 const main = async () => {
   try {
     const startTime = performance.now();
@@ -21,9 +29,11 @@ const main = async () => {
 
     core.startGroup('Minification Pipeline');
 
+    // Run the build process which includes minification and file handling based on inputs
     await runBuild();
     core.endGroup();
 
+    // Push changes to the target branch if there are any
     core.startGroup('Git Deployment');
     await pushToBranch();
     core.endGroup();
@@ -31,6 +41,7 @@ const main = async () => {
     core.setOutput('target_branch', inputs.targetBranch);
     core.setOutput('timestamp', new Date().toISOString());
 
+    // Add a summary of the pipeline results to the GitHub Actions summary tab
     await core.summary
       .addHeading('Minification Pipeline Results')
       .addTable([
@@ -44,6 +55,7 @@ const main = async () => {
       .addLink('Action Repository', 'https://github.com/tristanbudd/minified-branch-github-action')
       .write();
 
+    // Log the total execution time of the pipeline
     const endTime = performance.now();
     core.info(`Pipeline completed successfully in ${((endTime - startTime) / 1000).toFixed(2)}s!`);
   } catch (error) {

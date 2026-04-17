@@ -2,11 +2,27 @@
 
 const core = require('@actions/core');
 
+/**
+ * Parses a string input into a boolean value. If the input is undefined or empty, returns the
+ * provided default value.
+ *
+ * @param input
+ * @param defaultValue
+ * @returns {*|boolean}
+ */
 const parseBoolean = (input, defaultValue) => {
   if (input === undefined || input === '') return defaultValue;
   return input.trim().toLowerCase() === 'true';
 };
 
+/**
+ * Parses a comma-separated string input into an array of trimmed strings. If the input is
+ * undefined or empty, returns the provided default array.
+ *
+ * @param input
+ * @param defaultArray
+ * @returns {(*|string)[]|*[]}
+ */
 const parseArray = (input, defaultArray = []) => {
   if (!input || input.trim() === '') return defaultArray;
   return input
@@ -15,6 +31,15 @@ const parseArray = (input, defaultArray = []) => {
     .filter((item) => item.length > 0);
 };
 
+/**
+ * Reads and validates all workflow inputs, applying default values where necessary. Also logs
+ * warnings for potentially misconfigured inputs.
+ *
+ * @returns {{githubToken: string, sourceDir: (string|string), targetBranch: (string|string),
+ * keepOriginalFile: (*|boolean), dryRun: (*|boolean), commitMessage: (string|string),
+ * generateBackupFile: (*|boolean), hashFiles: (*|boolean), minifyCss: (*|boolean),
+ * forcePush: (*|boolean), minifyJs: (*|boolean), excludeDirs: ((*|string)[]|*[])}}
+ */
 const getInputs = () => {
   try {
     const inputs = {

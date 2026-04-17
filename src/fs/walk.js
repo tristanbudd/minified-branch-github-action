@@ -4,6 +4,15 @@ const { readdir } = require('fs/promises');
 const path = require('path');
 const { getInputs } = require('../config/inputs');
 
+/**
+ * Recursively walks through a directory and collects all files with the specified extension.
+ * Handles errors gracefully and logs them.
+ *
+ * @param dir
+ * @param extension
+ * @param fileList
+ * @returns {Promise<*[]>}
+ */
 const walk = async (dir, extension, fileList = []) => {
   const { excludeDirs } = getInputs();
   const files = await readdir(dir, { withFileTypes: true });

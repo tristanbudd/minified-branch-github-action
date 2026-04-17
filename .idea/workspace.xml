@@ -4,8 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a702ab42-3cf5-41db-8126-c7f5a3ce5c1f" name="Changes" comment="Hashed production">
+    <list default="true" id="a702ab42-3cf5-41db-8126-c7f5a3ce5c1f" name="Changes" comment="Using main branch">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config/inputs.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/inputs.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fs/copy.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/fs/copy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fs/read.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/fs/read.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fs/remove.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/fs/remove.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fs/walk.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/fs/walk.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fs/write.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/fs/write.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/github/branch.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/github/branch.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/github/client.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/github/client.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pipeline/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/build.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pipeline/css.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/css.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pipeline/javascript.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/javascript.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pipeline/rewrite.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/rewrite.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/pool.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/pool.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +73,7 @@
     "Node.js.index.js.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "update-documentation",
     "ignore.virus.scanning.warn.message": "true",
     "javascript.nodejs.core.library.configured.version": "22.12.0",
     "javascript.nodejs.core.library.typings.version": "22.12.0",
@@ -96,6 +110,7 @@
       <updated>1776378371675</updated>
       <workItem from="1776378372767" duration="3787000" />
       <workItem from="1776416044305" duration="3823000" />
+      <workItem from="1776429146963" duration="1882000" />
     </task>
     <task id="LOCAL-00001" summary="Initial Commit">
       <option name="closed" value="true" />
@@ -185,7 +200,31 @@
       <option name="project" value="LOCAL" />
       <updated>1776427950695</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Fix broken file deletion.">
+      <option name="closed" value="true" />
+      <created>1776428173164</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1776428173164</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Run format (To pass CI)">
+      <option name="closed" value="true" />
+      <created>1776429205566</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1776429205566</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Using main branch">
+      <option name="closed" value="true" />
+      <created>1776430039699</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1776430039699</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -196,7 +235,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="main" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -215,7 +266,10 @@
     <MESSAGE value="Hash file configuration option." />
     <MESSAGE value="Ensure unique hash." />
     <MESSAGE value="Hashed production" />
-    <option name="LAST_COMMIT_MESSAGE" value="Hashed production" />
+    <MESSAGE value="Fix broken file deletion." />
+    <MESSAGE value="Run format (To pass CI)" />
+    <MESSAGE value="Using main branch" />
+    <option name="LAST_COMMIT_MESSAGE" value="Using main branch" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

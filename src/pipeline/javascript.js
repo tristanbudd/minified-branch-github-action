@@ -2,6 +2,13 @@
 
 const { minify } = require('terser');
 
+/**
+ * Minifies JavaScript content using terser.
+ * Handles errors gracefully and logs them.
+ *
+ * @param content
+ * @returns {Promise<string>}
+ */
 const minifyJs = async (content) => {
   try {
     const result = await minify(content, {
