@@ -2,6 +2,13 @@
 
 const CleanCSS = require('clean-css');
 
+/**
+ * Minifies CSS content using clean-css.
+ * Handles errors gracefully and logs warnings.
+ *
+ * @param content
+ * @returns {Promise<*>}
+ */
 const minifyCss = async (content) => {
   const output = new CleanCSS({
     returnPromise: true,

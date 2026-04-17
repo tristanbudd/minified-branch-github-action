@@ -12,6 +12,13 @@ const { minifyCss } = require('./css');
 const { minifyJs } = require('./javascript');
 const { rewriteLinks } = require('./rewrite');
 
+/**
+ * Formats a byte size into a human-readable string with appropriate units (B, KB, MB).
+ * Handles zero and invalid inputs gracefully.
+ *
+ * @param bytes
+ * @returns {string}
+ */
 const formatBytes = (bytes) => {
   if (bytes === 0 || isNaN(bytes)) return '0 B';
   const k = 1024;
@@ -20,6 +27,14 @@ const formatBytes = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+/**
+ * Generates a short hash based on the content and file path.
+ * This can be used to create unique filenames for minified assets.
+ *
+ * @param content
+ * @param filePath
+ * @returns {string}
+ */
 const generateHash = (content, filePath) => {
   return crypto
     .createHash('md5')
@@ -28,14 +43,28 @@ const generateHash = (content, filePath) => {
     .slice(0, 8);
 };
 
+/**
+ * Processes a minification pipeline for a given file type (CSS or JS).
+ * It finds all relevant files, minifies them, and handles file operations based on user inputs.
+ * Logs detailed information about the process and returns mappings of original to updated paths.
+ *
+ * @param type
+ * @param extension
+ * @param minifierFn
+ * @param sourceDir
+ * @param inputs
+ * @returns {Promise<*[]>}
+ */
 const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) => {
   console.log(`--- Starting ${type} Pipeline ---`);
 
+  // Step 1: Find all relevant files
   const files = await walk(sourceDir, extension);
   const targetFiles = files.filter(
     (f) => !f.endsWith(`.min${extension}`) && !f.includes('.config.') && !f.endsWith('.backup'),
   );
 
+  // Step 2: Check if there are files to process
   if (targetFiles.length === 0) {
     console.log(`No unminified ${extension} files found. Skipping.`);
     return [];
@@ -46,6 +75,7 @@ const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) =
   let failCount = 0;
   const mappings = [];
 
+  // Step 3: Process files in parallel with a worker function
   const worker = async (filePath) => {
     try {
       const originalContent = await read(filePath);
@@ -54,6 +84,7 @@ const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) =
       const minifiedContent = await minifierFn(originalContent);
       const newSize = Buffer.byteLength(minifiedContent, 'utf8');
 
+      // Step 4: Determine the new file name, optionally with a hash
       let minFileName = `.min${extension}`;
       if (inputs.hashFiles) {
         const hash = generateHash(minifiedContent, filePath);
@@ -62,6 +93,7 @@ const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) =
 
       const minFilePath = filePath.replace(new RegExp(`${extension}$`), minFileName);
 
+      // Step 5: Generate backup if enabled, then write the minified file
       if (inputs.generateBackupFile) {
         await copy(filePath, `${filePath}.backup`);
       }
@@ -72,6 +104,7 @@ const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) =
         await remove(filePath);
       }
 
+      // Step 6: Store the mapping for link rewriting
       mappings.push({ original: filePath, updated: minFilePath });
 
       const saved = originalSize - newSize;
@@ -87,6 +120,7 @@ const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) =
     }
   };
 
+  // Step 7: Run the worker function with a concurrency limit
   await asyncPool(targetFiles, worker, 10);
 
   console.log(`--- ${type} Pipeline Summary ---`);
@@ -96,6 +130,13 @@ const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) =
   return mappings;
 };
 
+/**
+ * Main function to run the build process. It orchestrates the CSS and JS pipelines based on user
+ * inputs, collects mappings of original to minified files, and then rewrites links in HTML/PHP
+ * files accordingly. Logs detailed information about each step and the overall build time.
+ *
+ * @returns {Promise<void>}
+ */
 const runBuild = async () => {
   const inputs = getInputs();
   const start = performance.now();
@@ -105,6 +146,7 @@ const runBuild = async () => {
     `Build Settings - CSS: ${inputs.minifyCss ? 'ON' : 'OFF'}, JS: ${inputs.minifyJs ? 'ON' : 'OFF'}\n`,
   );
 
+  // Process CSS files if enabled
   if (inputs.minifyCss) {
     const cssMappings = await processPipeline('CSS', '.css', minifyCss, inputs.sourceDir, inputs);
     allMappings = allMappings.concat(cssMappings);
@@ -112,6 +154,7 @@ const runBuild = async () => {
     console.log('Skipping CSS Pipeline...\n');
   }
 
+  // Process JS files if enabled
   if (inputs.minifyJs) {
     const jsMappings = await processPipeline(
       'JavaScript',
@@ -125,6 +168,7 @@ const runBuild = async () => {
     console.log('Skipping JavaScript Pipeline...\n');
   }
 
+  // Rewrite links in HTML/PHP files if there are any mappings
   if (allMappings.length > 0) {
     console.log('--- Rewriting Links in HTML/PHP Files ---');
     await rewriteLinks(inputs.sourceDir, allMappings);

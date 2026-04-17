@@ -4,6 +4,14 @@ const { copyFile } = require('fs/promises');
 const path = require('path');
 const fs = require('fs');
 
+/**
+ * Copies a file from source to destination, ensuring the destination directory exists.
+ * Handles errors gracefully and logs them.
+ *
+ * @param source
+ * @param destination
+ * @returns {Promise<void>}
+ */
 const copy = async (source, destination) => {
   try {
     const destDir = path.dirname(destination);
