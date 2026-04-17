@@ -22,7 +22,7 @@ module.exports = [
   {
     files: ['src/**/*.js'],
 
-    ignores: ['examples/**'],
+    ignores: ['examples/**', 'dist/**'],
 
     languageOptions: {
       ecmaVersion: 2022,
