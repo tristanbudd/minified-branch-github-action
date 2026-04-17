@@ -17,6 +17,8 @@ const pushToBranch = async () => {
 
   await exec.exec('git', ['checkout', '-B', targetBranch]);
 
+  await exec.exec('git', ['rm', '-rf', '.', '--ignore-unmatch']);
+
   await exec.exec('git', ['add', '.']);
 
   const exitCode = await exec.exec('git', ['diff', '--staged', '--quiet'], {
