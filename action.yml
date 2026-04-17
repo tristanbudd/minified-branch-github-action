@@ -1,7 +1,9 @@
 name: 'Minified Branch Builder'
 description: 'Minifies CSS & JS and pushes them to a dedicated production branch, rewriting asset links.'
 author: 'Tristan Budd'
-
+branding:
+  icon: 'minimize-2'
+  color: 'black'
 inputs:
   github_token:
     description: 'GitHub token for pushing the new branch'
