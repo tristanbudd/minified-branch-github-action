@@ -9,9 +9,9 @@ const { pushToBranch } = require('./github/branch');
 const main = async () => {
   try {
     const startTime = performance.now();
-    core.info('🚀 Starting Minified Branch GitHub Action...');
+    core.info('Starting Minified Branch GitHub Action...');
 
-    core.startGroup('⚙Action Configuration');
+    core.startGroup('Action Configuration');
     const inputs = getInputs();
     core.info(`Target Branch: ${inputs.targetBranch}`);
     core.info(`Source Directory: ${inputs.sourceDir}`);

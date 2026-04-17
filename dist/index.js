@@ -19969,6 +19969,23 @@ var require_copy = __commonJS({
   }
 });
 
+// src/fs/remove.js
+var require_remove = __commonJS({
+  "src/fs/remove.js"(exports2, module2) {
+    "use strict";
+    var { unlink: unlink2 } = require("fs/promises");
+    var remove2 = async (filePath) => {
+      try {
+        await unlink2(filePath);
+      } catch (error) {
+        console.error(`Failed to remove file: ${filePath}`);
+        throw error;
+      }
+    };
+    module2.exports = { remove: remove2 };
+  }
+});
+
 // node_modules/clean-css/lib/optimizer/level-0/optimize.js
 var require_optimize = __commonJS({
   "node_modules/clean-css/lib/optimizer/level-0/optimize.js"(exports2, module2) {
@@ -68926,6 +68943,47 @@ var require_javascript = __commonJS({
   }
 });
 
+// src/pipeline/rewrite.js
+var require_rewrite = __commonJS({
+  "src/pipeline/rewrite.js"(exports2, module2) {
+    "use strict";
+    var { walk: walk2 } = require_walk();
+    var { read } = require_read();
+    var { write } = require_write();
+    var path4 = require("path");
+    var rewriteLinks = async (sourceDir, mappings) => {
+      const htmlFiles = await walk2(sourceDir, ".html");
+      const phpFiles = await walk2(sourceDir, ".php");
+      const targetFiles = [...htmlFiles, ...phpFiles];
+      if (targetFiles.length === 0) return;
+      await Promise.all(
+        targetFiles.map(async (filePath) => {
+          let content = await read(filePath);
+          let modified = false;
+          for (const { original, updated } of mappings) {
+            const originalName = path4.basename(original);
+            const updatedName = path4.basename(updated);
+            const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const safeOriginalName = escapeRegExp(originalName);
+            const regex = new RegExp(`(["'])(.*?)(${safeOriginalName})(\\?.*?)?\\1`, "g");
+            if (regex.test(content)) {
+              content = content.replace(regex, (match, p1, p2, p3, p4) => {
+                const query = p4 || "";
+                return `${p1}${p2}${updatedName}${query}${p1}`;
+              });
+              modified = true;
+            }
+          }
+          if (modified) {
+            await write(filePath, content);
+          }
+        })
+      );
+    };
+    module2.exports = { rewriteLinks };
+  }
+});
+
 // src/pipeline/build.js
 var require_build = __commonJS({
   "src/pipeline/build.js"(exports2, module2) {
@@ -68935,8 +68993,10 @@ var require_build = __commonJS({
     var { read } = require_read();
     var { write } = require_write();
     var { copy } = require_copy();
+    var { remove: remove2 } = require_remove();
     var { minifyCss } = require_css();
     var { minifyJs } = require_javascript();
+    var { rewriteLinks } = require_rewrite();
     var formatBytes = (bytes) => {
       if (bytes === 0 || isNaN(bytes)) return "0 B";
       const k = 1024;
@@ -68948,15 +69008,16 @@ var require_build = __commonJS({
       console.log(`--- Starting ${type} Pipeline ---`);
       const files = await walk2(sourceDir, extension);
       const targetFiles = files.filter(
-        (f) => !f.endsWith(`.min${extension}`) && !f.includes(".config.")
+        (f) => !f.endsWith(`.min${extension}`) && !f.includes(".config.") && !f.endsWith(".backup")
       );
       if (targetFiles.length === 0) {
         console.log(`No unminified ${extension} files found. Skipping.`);
-        return;
+        return [];
       }
       let totalSaved = 0;
       let successCount = 0;
       let failCount = 0;
+      const mappings = [];
       await Promise.all(
         targetFiles.map(async (filePath) => {
           try {
@@ -68967,6 +69028,8 @@ var require_build = __commonJS({
             const minFilePath = filePath.replace(new RegExp(`${extension}$`), `.min${extension}`);
             await copy(filePath, `${filePath}.backup`);
             await write(minFilePath, minifiedContent);
+            await remove2(filePath);
+            mappings.push({ original: filePath, updated: minFilePath });
             const saved = originalSize - newSize;
             const percent = originalSize > 0 ? (saved / originalSize * 100).toFixed(1) : 0;
             totalSaved += saved;
@@ -68982,23 +69045,33 @@ var require_build = __commonJS({
       console.log(`Processed: ${successCount} successful, ${failCount} failed.`);
       console.log(`Total space saved: ${formatBytes(totalSaved)}
 `);
+      return mappings;
     };
     var runBuild2 = async () => {
       const inputs = getInputs2();
       const start = performance.now();
+      let allMappings = [];
       console.log(
         `Build Settings - CSS: ${inputs.minifyCss ? "ON" : "OFF"}, JS: ${inputs.minifyJs ? "ON" : "OFF"}
 `
       );
       if (inputs.minifyCss) {
-        await processPipeline("CSS", ".css", minifyCss, inputs.sourceDir);
+        const cssMappings = await processPipeline("CSS", ".css", minifyCss, inputs.sourceDir);
+        allMappings = allMappings.concat(cssMappings);
       } else {
         console.log("Skipping CSS Pipeline...\n");
       }
       if (inputs.minifyJs) {
-        await processPipeline("JavaScript", ".js", minifyJs, inputs.sourceDir);
+        const jsMappings = await processPipeline("JavaScript", ".js", minifyJs, inputs.sourceDir);
+        allMappings = allMappings.concat(jsMappings);
       } else {
         console.log("Skipping JavaScript Pipeline...\n");
+      }
+      if (allMappings.length > 0) {
+        console.log("--- Rewriting Links in HTML/PHP Files ---");
+        await rewriteLinks(inputs.sourceDir, allMappings);
+        console.log(`Successfully rewrote links for ${allMappings.length} assets.
+`);
       }
       const end = performance.now();
       console.log(`Build completed in ${((end - start) / 1e3).toFixed(2)}s`);
@@ -69830,8 +69903,8 @@ var { pushToBranch } = require_branch();
 var main = async () => {
   try {
     const startTime = performance.now();
-    core.info("\u{1F680} Starting Minified Branch GitHub Action...");
-    core.startGroup("\u2699Action Configuration");
+    core.info("Starting Minified Branch GitHub Action...");
+    core.startGroup("Action Configuration");
     const inputs = getInputs();
     core.info(`Target Branch: ${inputs.targetBranch}`);
     core.info(`Source Directory: ${inputs.sourceDir}`);
