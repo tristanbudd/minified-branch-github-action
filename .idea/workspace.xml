@@ -4,10 +4,34 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a702ab42-3cf5-41db-8126-c7f5a3ce5c1f" name="Changes" comment="Add other workspace files">
+    <list default="true" id="a702ab42-3cf5-41db-8126-c7f5a3ce5c1f" name="Changes" comment="Action &amp; Config Setup">
+      <change afterPath="$PROJECT_DIR$/.github/workflows/test.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/example_1/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/example_1/script.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/example_1/style.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/example_2/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/example_2/modal.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/example_2/modal.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/example_3/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/example_3/theme.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/example_3/theme.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/fs/walk.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/action.yml" beforeDir="false" afterPath="$PROJECT_DIR$/action.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eslint.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/eslint.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/config/inputs.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/inputs.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fs/copy.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/fs/copy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fs/read.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/fs/read.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fs/write.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/fs/write.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/github/branch.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/github/branch.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/github/client.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/github/client.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pipeline/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/build.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pipeline/css.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/css.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pipeline/javascript.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/javascript.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pipeline/rewrite.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/rewrite.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,6 +50,11 @@
     </selectedModels>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -56,7 +85,7 @@
     "Node.js.index.js.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "main-code",
     "ignore.virus.scanning.warn.message": "true",
     "javascript.nodejs.core.library.configured.version": "22.12.0",
     "javascript.nodejs.core.library.typings.version": "22.12.0",
@@ -67,6 +96,7 @@
     "nodejs_package_manager_path": "npm",
     "prettierjs.PrettierConfiguration.Package": "C:\\Users\\trist\\WebstormProjects\\minified-branch-github-action\\node_modules\\prettier",
     "settings.editor.selected.configurable": "preferences.lookFeel",
+    "ts.external.directory.path": "C:\\Users\\trist\\AppData\\Local\\Programs\\WebStorm\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -91,7 +121,7 @@
       <option name="presentableId" value="Default" />
       <updated>1776378371675</updated>
       <workItem from="1776378372767" duration="3787000" />
-      <workItem from="1776416044305" duration="1096000" />
+      <workItem from="1776416044305" duration="3823000" />
     </task>
     <task id="LOCAL-00001" summary="Initial Commit">
       <option name="closed" value="true" />
@@ -125,7 +155,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776416157260</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Action &amp; Config Setup">
+      <option name="closed" value="true" />
+      <created>1776418112264</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1776418112264</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -147,7 +185,8 @@
     <MESSAGE value="Refactor eslint.config.js" />
     <MESSAGE value="Add workspace files" />
     <MESSAGE value="Add other workspace files" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add other workspace files" />
+    <MESSAGE value="Action &amp; Config Setup" />
+    <option name="LAST_COMMIT_MESSAGE" value="Action &amp; Config Setup" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

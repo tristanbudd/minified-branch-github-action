@@ -1,0 +1,53 @@
+/* =========================================
+   Example 1: Counter Stylesheet
+=========================================
+*/
+
+.counter-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* This class handles the large number display */
+.counter-display {
+  font-size: 8rem;
+  font-weight: bold;
+  margin: 20px 0;
+  color: #343a40;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+}
+
+/* Generic button styling */
+.btn {
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    opacity 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}

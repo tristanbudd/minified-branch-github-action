@@ -1,0 +1,55 @@
+/* =========================================
+   Example 3: Theme Stylesheet
+=========================================
+*/
+
+/* Define root variables for light mode (default) */
+:root {
+  --background-color-primary: #ffffff;
+  --text-color-primary: #121212;
+  --button-background-color: #e0e0e0;
+  --button-text-color: #000000;
+}
+
+/* Define root variables for dark mode overrides */
+[data-theme='dark'] {
+  --background-color-primary: #121212;
+  --text-color-primary: #ffffff;
+  --button-background-color: #333333;
+  --button-text-color: #ffffff;
+}
+
+body {
+  background-color: var(--background-color-primary);
+  color: var(--text-color-primary);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.theme-wrapper {
+  text-align: center;
+  padding: 2rem;
+  border: 1px solid var(--button-background-color);
+  border-radius: 12px;
+}
+
+.theme-btn {
+  background-color: var(--button-background-color);
+  color: var(--button-text-color);
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}

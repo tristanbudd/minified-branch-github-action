@@ -1,0 +1,30 @@
+name: Test Minification Action
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  minify-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          target_branch: production
+          source_dir: 'examples/'
+          minify_css: 'true'
+          minify_js: 'true'
+          exclude_dirs: node_modules,.git,dist
+          dry_run: 'false'
+          force_push: 'true'
