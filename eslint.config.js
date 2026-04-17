@@ -3,11 +3,19 @@ const globals = require('globals');
 const eslintConfigPrettier = require('eslint-config-prettier');
 
 module.exports = [
-  {
-    ignores: ['eslint.config.js'],
-  },
-
   js.configs.recommended,
+
+  {
+    files: ['eslint.config.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: globals.node,
+    },
+    rules: {
+      'no-undef': 'off',
+    },
+  },
 
   {
     files: ['src/**/*.js'],
@@ -21,6 +29,7 @@ module.exports = [
     rules: {
       'no-unused-vars': 'warn',
       'no-undef': 'error',
+      'no-console': 'off',
     },
   },
 
