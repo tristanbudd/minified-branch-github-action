@@ -29,6 +29,9 @@ const getInputs = () => {
       excludeDirs: parseArray(core.getInput('exclude_dirs'), ['node_modules', '.git', 'dist']),
       dryRun: parseBoolean(core.getInput('dry_run'), false),
       forcePush: parseBoolean(core.getInput('force_push'), true),
+
+      keepOriginalFile: parseBoolean(core.getInput('keep_original_file'), false),
+      generateBackupFile: parseBoolean(core.getInput('generate_backup_file'), true),
     };
 
     if (inputs.sourceDir.startsWith('/')) {

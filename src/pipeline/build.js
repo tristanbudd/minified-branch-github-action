@@ -18,7 +18,7 @@ const formatBytes = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-const processPipeline = async (type, extension, minifierFn, sourceDir) => {
+const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) => {
   console.log(`--- Starting ${type} Pipeline ---`);
 
   const files = await walk(sourceDir, extension);
@@ -47,9 +47,15 @@ const processPipeline = async (type, extension, minifierFn, sourceDir) => {
 
         const minFilePath = filePath.replace(new RegExp(`${extension}$`), `.min${extension}`);
 
-        await copy(filePath, `${filePath}.backup`);
+        if (inputs.generateBackupFile) {
+          await copy(filePath, `${filePath}.backup`);
+        }
+
         await write(minFilePath, minifiedContent);
-        await remove(filePath);
+
+        if (!inputs.keepOriginalFile) {
+          await remove(filePath);
+        }
 
         mappings.push({ original: filePath, updated: minFilePath });
 
@@ -84,14 +90,20 @@ const runBuild = async () => {
   );
 
   if (inputs.minifyCss) {
-    const cssMappings = await processPipeline('CSS', '.css', minifyCss, inputs.sourceDir);
+    const cssMappings = await processPipeline('CSS', '.css', minifyCss, inputs.sourceDir, inputs);
     allMappings = allMappings.concat(cssMappings);
   } else {
     console.log('Skipping CSS Pipeline...\n');
   }
 
   if (inputs.minifyJs) {
-    const jsMappings = await processPipeline('JavaScript', '.js', minifyJs, inputs.sourceDir);
+    const jsMappings = await processPipeline(
+      'JavaScript',
+      '.js',
+      minifyJs,
+      inputs.sourceDir,
+      inputs,
+    );
     allMappings = allMappings.concat(jsMappings);
   } else {
     console.log('Skipping JavaScript Pipeline...\n');

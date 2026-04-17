@@ -39,6 +39,14 @@ inputs:
     description: 'Force push to the target branch'
     required: false
     default: 'true'
+  keep_original_file:
+    description: 'Keep the original unminified file'
+    required: false
+    default: 'false'
+  generate_backup_file:
+    description: 'Generate a .backup file for the original asset'
+    required: false
+    default: 'true'
 
 runs:
   using: 'node20'
