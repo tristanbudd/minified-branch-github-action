@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a702ab42-3cf5-41db-8126-c7f5a3ce5c1f" name="Changes" comment="Hash file configuration option.">
+    <list default="true" id="a702ab42-3cf5-41db-8126-c7f5a3ce5c1f" name="Changes" comment="Ensure unique hash.">
+      <change afterPath="$PROJECT_DIR$/src/utils/pool.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pipeline/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pipeline/build.js" afterDir="false" />
     </list>
@@ -170,7 +171,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776427496328</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Ensure unique hash.">
+      <option name="closed" value="true" />
+      <created>1776427610453</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1776427610453</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -198,7 +207,8 @@
     <MESSAGE value="Existing file / backup file configuration options." />
     <MESSAGE value="Ensure clean slate every new push. (Remove deleted files)" />
     <MESSAGE value="Hash file configuration option." />
-    <option name="LAST_COMMIT_MESSAGE" value="Hash file configuration option." />
+    <MESSAGE value="Ensure unique hash." />
+    <option name="LAST_COMMIT_MESSAGE" value="Ensure unique hash." />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

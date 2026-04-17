@@ -19972,6 +19972,29 @@ var require_copy = __commonJS({
   }
 });
 
+// src/utils/pool.js
+var require_pool2 = __commonJS({
+  "src/utils/pool.js"(exports2, module2) {
+    "use strict";
+    var asyncPool = async (iterable, iteratorFn, limit = 10) => {
+      const results = [];
+      const executing = /* @__PURE__ */ new Set();
+      for (const item of iterable) {
+        const p = Promise.resolve().then(() => iteratorFn(item));
+        results.push(p);
+        executing.add(p);
+        const clean = () => executing.delete(p);
+        p.then(clean).catch(clean);
+        if (executing.size >= limit) {
+          await Promise.race(executing);
+        }
+      }
+      return Promise.all(results);
+    };
+    module2.exports = { asyncPool };
+  }
+});
+
 // src/fs/remove.js
 var require_remove = __commonJS({
   "src/fs/remove.js"(exports2, module2) {
@@ -68998,6 +69021,7 @@ var require_build = __commonJS({
     var { read } = require_read();
     var { write } = require_write();
     var { copy } = require_copy();
+    var { asyncPool } = require_pool2();
     var { remove: remove2 } = require_remove();
     var { minifyCss } = require_css();
     var { minifyJs } = require_javascript();
@@ -69026,38 +69050,37 @@ var require_build = __commonJS({
       let successCount = 0;
       let failCount = 0;
       const mappings = [];
-      await Promise.all(
-        targetFiles.map(async (filePath) => {
-          try {
-            const originalContent = await read(filePath);
-            const originalSize = Buffer.byteLength(originalContent, "utf8");
-            const minifiedContent = await minifierFn(originalContent);
-            const newSize = Buffer.byteLength(minifiedContent, "utf8");
-            let minFileName = `.min${extension}`;
-            if (inputs.hashFiles) {
-              const hash = generateHash(minifiedContent, filePath);
-              minFileName = `.${hash}.min${extension}`;
-            }
-            const minFilePath = filePath.replace(new RegExp(`${extension}$`), minFileName);
-            if (inputs.generateBackupFile) {
-              await copy(filePath, `${filePath}.backup`);
-            }
-            await write(minFilePath, minifiedContent);
-            if (!inputs.keepOriginalFile) {
-              await remove2(filePath);
-            }
-            mappings.push({ original: filePath, updated: minFilePath });
-            const saved = originalSize - newSize;
-            const percent = originalSize > 0 ? (saved / originalSize * 100).toFixed(1) : 0;
-            totalSaved += saved;
-            successCount++;
-            console.log(`${filePath} | Saved: ${formatBytes(saved)} (${percent}%)`);
-          } catch (error) {
-            failCount++;
-            console.error(`Failed to process ${filePath}: ${error.message}`);
+      const worker = async (filePath) => {
+        try {
+          const originalContent = await read(filePath);
+          const originalSize = Buffer.byteLength(originalContent, "utf8");
+          const minifiedContent = await minifierFn(originalContent);
+          const newSize = Buffer.byteLength(minifiedContent, "utf8");
+          let minFileName = `.min${extension}`;
+          if (inputs.hashFiles) {
+            const hash = generateHash(minifiedContent, filePath);
+            minFileName = `.${hash}.min${extension}`;
           }
-        })
-      );
+          const minFilePath = filePath.replace(new RegExp(`${extension}$`), minFileName);
+          if (inputs.generateBackupFile) {
+            await copy(filePath, `${filePath}.backup`);
+          }
+          await write(minFilePath, minifiedContent);
+          if (!inputs.keepOriginalFile) {
+            await remove2(filePath);
+          }
+          mappings.push({ original: filePath, updated: minFilePath });
+          const saved = originalSize - newSize;
+          const percent = originalSize > 0 ? (saved / originalSize * 100).toFixed(1) : 0;
+          totalSaved += saved;
+          successCount++;
+          console.log(`${filePath} | Saved: ${formatBytes(saved)} (${percent}%)`);
+        } catch (error) {
+          failCount++;
+          console.error(`Failed to process ${filePath}: ${error.message}`);
+        }
+      };
+      await asyncPool(targetFiles, worker, 10);
       console.log(`--- ${type} Pipeline Summary ---`);
       console.log(`Processed: ${successCount} successful, ${failCount} failed.`);
       console.log(`Total space saved: ${formatBytes(totalSaved)}

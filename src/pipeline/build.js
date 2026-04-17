@@ -6,6 +6,7 @@ const { walk } = require('../fs/walk');
 const { read } = require('../fs/read');
 const { write } = require('../fs/write');
 const { copy } = require('../fs/copy');
+const { asyncPool } = require('../utils/pool');
 const { remove } = require('../fs/remove');
 const { minifyCss } = require('./css');
 const { minifyJs } = require('./javascript');
@@ -45,48 +46,48 @@ const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) =
   let failCount = 0;
   const mappings = [];
 
-  await Promise.all(
-    targetFiles.map(async (filePath) => {
-      try {
-        const originalContent = await read(filePath);
-        const originalSize = Buffer.byteLength(originalContent, 'utf8');
+  const worker = async (filePath) => {
+    try {
+      const originalContent = await read(filePath);
+      const originalSize = Buffer.byteLength(originalContent, 'utf8');
 
-        const minifiedContent = await minifierFn(originalContent);
-        const newSize = Buffer.byteLength(minifiedContent, 'utf8');
+      const minifiedContent = await minifierFn(originalContent);
+      const newSize = Buffer.byteLength(minifiedContent, 'utf8');
 
-        let minFileName = `.min${extension}`;
-        if (inputs.hashFiles) {
-          const hash = generateHash(minifiedContent, filePath);
-          minFileName = `.${hash}.min${extension}`;
-        }
-
-        const minFilePath = filePath.replace(new RegExp(`${extension}$`), minFileName);
-
-        if (inputs.generateBackupFile) {
-          await copy(filePath, `${filePath}.backup`);
-        }
-
-        await write(minFilePath, minifiedContent);
-
-        if (!inputs.keepOriginalFile) {
-          await remove(filePath);
-        }
-
-        mappings.push({ original: filePath, updated: minFilePath });
-
-        const saved = originalSize - newSize;
-        const percent = originalSize > 0 ? ((saved / originalSize) * 100).toFixed(1) : 0;
-
-        totalSaved += saved;
-        successCount++;
-
-        console.log(`${filePath} | Saved: ${formatBytes(saved)} (${percent}%)`);
-      } catch (error) {
-        failCount++;
-        console.error(`Failed to process ${filePath}: ${error.message}`);
+      let minFileName = `.min${extension}`;
+      if (inputs.hashFiles) {
+        const hash = generateHash(minifiedContent, filePath);
+        minFileName = `.${hash}.min${extension}`;
       }
-    }),
-  );
+
+      const minFilePath = filePath.replace(new RegExp(`${extension}$`), minFileName);
+
+      if (inputs.generateBackupFile) {
+        await copy(filePath, `${filePath}.backup`);
+      }
+
+      await write(minFilePath, minifiedContent);
+
+      if (!inputs.keepOriginalFile) {
+        await remove(filePath);
+      }
+
+      mappings.push({ original: filePath, updated: minFilePath });
+
+      const saved = originalSize - newSize;
+      const percent = originalSize > 0 ? ((saved / originalSize) * 100).toFixed(1) : 0;
+
+      totalSaved += saved;
+      successCount++;
+
+      console.log(`${filePath} | Saved: ${formatBytes(saved)} (${percent}%)`);
+    } catch (error) {
+      failCount++;
+      console.error(`Failed to process ${filePath}: ${error.message}`);
+    }
+  };
+
+  await asyncPool(targetFiles, worker, 10);
 
   console.log(`--- ${type} Pipeline Summary ---`);
   console.log(`Processed: ${successCount} successful, ${failCount} failed.`);
