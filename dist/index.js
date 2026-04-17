@@ -69906,8 +69906,11 @@ var require_branch = __commonJS({
     var exec2 = (init_exec(), __toCommonJS(exec_exports));
     var core2 = require_core();
     var { getInputs: getInputs2 } = require_inputs();
+    var { writeFile } = require("fs/promises");
+    var path4 = require("path");
     var pushToBranch2 = async () => {
       const { targetBranch, commitMessage, dryRun, forcePush } = getInputs2();
+      core2.info("Configuring git user identity...");
       await exec2.exec("git", ["config", "--global", "user.name", "github-actions[bot]"]);
       await exec2.exec("git", [
         "config",
@@ -69915,27 +69918,38 @@ var require_branch = __commonJS({
         "user.email",
         "github-actions[bot]@users.noreply.github.com"
       ]);
+      await exec2.exec("git", ["config", "--global", "--add", "safe.directory", process.cwd()]);
+      core2.info(`Switching/Creating target branch: ${targetBranch}`);
       await exec2.exec("git", ["checkout", "-B", targetBranch]);
-      await exec2.exec("git", ["rm", "-rf", ".", "--ignore-unmatch"]);
-      await exec2.exec("git", ["add", "."]);
+      try {
+        await writeFile(path4.join(process.cwd(), ".nojekyll"), "");
+        core2.info("Added .nojekyll file.");
+      } catch (err) {
+        core2.warning(`Could not create .nojekyll: ${err.message}`);
+      }
+      core2.info("Staging modified files...");
+      await exec2.exec("git", ["add", "-A"]);
       const exitCode = await exec2.exec("git", ["diff", "--staged", "--quiet"], {
         ignoreReturnCode: true
       });
       if (exitCode === 0) {
-        core2.info("No changes detected. Skipping commit.");
+        core2.info("No changes detected compared to existing branch. Skipping commit.");
         return;
       }
+      core2.info(`Committing changes: ${commitMessage}`);
       await exec2.exec("git", ["commit", "-m", commitMessage]);
       if (dryRun) {
         core2.info("Dry run enabled. Skipping git push.");
         return;
       }
+      core2.info(`Pushing to origin/${targetBranch}...`);
       const pushArgs = ["push"];
       if (forcePush) {
         pushArgs.push("-f");
       }
       pushArgs.push("origin", targetBranch);
       await exec2.exec("git", pushArgs);
+      core2.info("Branch deployment completed successfully.");
     };
     module2.exports = { pushToBranch: pushToBranch2 };
   }
