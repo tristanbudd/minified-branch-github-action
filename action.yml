@@ -27,6 +27,18 @@ inputs:
     description: 'Enable JavaScript minification (true/false)'
     required: false
     default: 'true'
+  exclude_dirs:
+    description: 'Comma-separated list of directories to ignore'
+    required: false
+    default: 'node_modules,.git,dist'
+  dry_run:
+    description: 'Run without committing or pushing'
+    required: false
+    default: 'false'
+  force_push:
+    description: 'Force push to the target branch'
+    required: false
+    default: 'true'
 
 runs:
   using: 'node20'
