@@ -28,3 +28,6 @@ jobs:
           exclude_dirs: node_modules,.git,dist
           dry_run: 'false'
           force_push: 'true'
+          keep_original_file: 'false'
+          generate_backup_file: 'true'
+          hash_files: 'false'

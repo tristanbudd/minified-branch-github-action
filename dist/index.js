@@ -19861,7 +19861,10 @@ var require_inputs = __commonJS({
           minifyJs: parseBoolean(core2.getInput("minify_js"), true),
           excludeDirs: parseArray(core2.getInput("exclude_dirs"), ["node_modules", ".git", "dist"]),
           dryRun: parseBoolean(core2.getInput("dry_run"), false),
-          forcePush: parseBoolean(core2.getInput("force_push"), true)
+          forcePush: parseBoolean(core2.getInput("force_push"), true),
+          keepOriginalFile: parseBoolean(core2.getInput("keep_original_file"), false),
+          generateBackupFile: parseBoolean(core2.getInput("generate_backup_file"), true),
+          hashFiles: parseBoolean(core2.getInput("hash_files"), false)
         };
         if (inputs.sourceDir.startsWith("/")) {
           core2.warning(
@@ -19966,6 +19969,29 @@ var require_copy = __commonJS({
       }
     };
     module2.exports = { copy };
+  }
+});
+
+// src/utils/pool.js
+var require_pool2 = __commonJS({
+  "src/utils/pool.js"(exports2, module2) {
+    "use strict";
+    var asyncPool = async (iterable, iteratorFn, limit = 10) => {
+      const results = [];
+      const executing = /* @__PURE__ */ new Set();
+      for (const item of iterable) {
+        const p = Promise.resolve().then(() => iteratorFn(item));
+        results.push(p);
+        executing.add(p);
+        const clean = () => executing.delete(p);
+        p.then(clean).catch(clean);
+        if (executing.size >= limit) {
+          await Promise.race(executing);
+        }
+      }
+      return Promise.all(results);
+    };
+    module2.exports = { asyncPool };
   }
 });
 
@@ -68965,13 +68991,14 @@ var require_rewrite = __commonJS({
             const updatedName = path4.basename(updated);
             const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
             const safeOriginalName = escapeRegExp(originalName);
-            const regex = new RegExp(`(["'])(.*?)(${safeOriginalName})(\\?.*?)?\\1`, "g");
+            const regex = new RegExp(`(["'])(?:.*?/)?${safeOriginalName}(\\?.*?)?\\1`, "g");
             if (regex.test(content)) {
-              content = content.replace(regex, (match, p1, p2, p3, p4) => {
-                const query = p4 || "";
-                return `${p1}${p2}${updatedName}${query}${p1}`;
+              content = content.replace(regex, (match, quote, query) => {
+                modified = true;
+                const dirMatch = match.match(new RegExp(`${quote}(.*?)${safeOriginalName}`));
+                const prefix = dirMatch ? dirMatch[1] : "";
+                return `${quote}${prefix}${updatedName}${query || ""}${quote}`;
               });
-              modified = true;
             }
           }
           if (modified) {
@@ -68988,11 +69015,13 @@ var require_rewrite = __commonJS({
 var require_build = __commonJS({
   "src/pipeline/build.js"(exports2, module2) {
     "use strict";
+    var crypto = require("crypto");
     var { getInputs: getInputs2 } = require_inputs();
     var { walk: walk2 } = require_walk();
     var { read } = require_read();
     var { write } = require_write();
     var { copy } = require_copy();
+    var { asyncPool } = require_pool2();
     var { remove: remove2 } = require_remove();
     var { minifyCss } = require_css();
     var { minifyJs } = require_javascript();
@@ -69004,7 +69033,10 @@ var require_build = __commonJS({
       const i = Math.floor(Math.log(bytes) / Math.log(k));
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
     };
-    var processPipeline = async (type, extension, minifierFn, sourceDir) => {
+    var generateHash = (content, filePath) => {
+      return crypto.createHash("md5").update(content + filePath).digest("hex").slice(0, 8);
+    };
+    var processPipeline = async (type, extension, minifierFn, sourceDir, inputs) => {
       console.log(`--- Starting ${type} Pipeline ---`);
       const files = await walk2(sourceDir, extension);
       const targetFiles = files.filter(
@@ -69018,29 +69050,37 @@ var require_build = __commonJS({
       let successCount = 0;
       let failCount = 0;
       const mappings = [];
-      await Promise.all(
-        targetFiles.map(async (filePath) => {
-          try {
-            const originalContent = await read(filePath);
-            const originalSize = Buffer.byteLength(originalContent, "utf8");
-            const minifiedContent = await minifierFn(originalContent);
-            const newSize = Buffer.byteLength(minifiedContent, "utf8");
-            const minFilePath = filePath.replace(new RegExp(`${extension}$`), `.min${extension}`);
-            await copy(filePath, `${filePath}.backup`);
-            await write(minFilePath, minifiedContent);
-            await remove2(filePath);
-            mappings.push({ original: filePath, updated: minFilePath });
-            const saved = originalSize - newSize;
-            const percent = originalSize > 0 ? (saved / originalSize * 100).toFixed(1) : 0;
-            totalSaved += saved;
-            successCount++;
-            console.log(`${filePath} | Saved: ${formatBytes(saved)} (${percent}%)`);
-          } catch (error) {
-            failCount++;
-            console.error(`Failed to process ${filePath}: ${error.message}`);
+      const worker = async (filePath) => {
+        try {
+          const originalContent = await read(filePath);
+          const originalSize = Buffer.byteLength(originalContent, "utf8");
+          const minifiedContent = await minifierFn(originalContent);
+          const newSize = Buffer.byteLength(minifiedContent, "utf8");
+          let minFileName = `.min${extension}`;
+          if (inputs.hashFiles) {
+            const hash = generateHash(minifiedContent, filePath);
+            minFileName = `.${hash}.min${extension}`;
           }
-        })
-      );
+          const minFilePath = filePath.replace(new RegExp(`${extension}$`), minFileName);
+          if (inputs.generateBackupFile) {
+            await copy(filePath, `${filePath}.backup`);
+          }
+          await write(minFilePath, minifiedContent);
+          if (!inputs.keepOriginalFile) {
+            await remove2(filePath);
+          }
+          mappings.push({ original: filePath, updated: minFilePath });
+          const saved = originalSize - newSize;
+          const percent = originalSize > 0 ? (saved / originalSize * 100).toFixed(1) : 0;
+          totalSaved += saved;
+          successCount++;
+          console.log(`${filePath} | Saved: ${formatBytes(saved)} (${percent}%)`);
+        } catch (error) {
+          failCount++;
+          console.error(`Failed to process ${filePath}: ${error.message}`);
+        }
+      };
+      await asyncPool(targetFiles, worker, 10);
       console.log(`--- ${type} Pipeline Summary ---`);
       console.log(`Processed: ${successCount} successful, ${failCount} failed.`);
       console.log(`Total space saved: ${formatBytes(totalSaved)}
@@ -69056,13 +69096,19 @@ var require_build = __commonJS({
 `
       );
       if (inputs.minifyCss) {
-        const cssMappings = await processPipeline("CSS", ".css", minifyCss, inputs.sourceDir);
+        const cssMappings = await processPipeline("CSS", ".css", minifyCss, inputs.sourceDir, inputs);
         allMappings = allMappings.concat(cssMappings);
       } else {
         console.log("Skipping CSS Pipeline...\n");
       }
       if (inputs.minifyJs) {
-        const jsMappings = await processPipeline("JavaScript", ".js", minifyJs, inputs.sourceDir);
+        const jsMappings = await processPipeline(
+          "JavaScript",
+          ".js",
+          minifyJs,
+          inputs.sourceDir,
+          inputs
+        );
         allMappings = allMappings.concat(jsMappings);
       } else {
         console.log("Skipping JavaScript Pipeline...\n");
@@ -69870,6 +69916,7 @@ var require_branch = __commonJS({
         "github-actions[bot]@users.noreply.github.com"
       ]);
       await exec2.exec("git", ["checkout", "-B", targetBranch]);
+      await exec2.exec("git", ["rm", "-rf", ".", "--ignore-unmatch"]);
       await exec2.exec("git", ["add", "."]);
       const exitCode = await exec2.exec("git", ["diff", "--staged", "--quiet"], {
         ignoreReturnCode: true

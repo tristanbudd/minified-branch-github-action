@@ -1,10 +1,12 @@
 'use strict';
 
+const crypto = require('crypto');
 const { getInputs } = require('../config/inputs');
 const { walk } = require('../fs/walk');
 const { read } = require('../fs/read');
 const { write } = require('../fs/write');
 const { copy } = require('../fs/copy');
+const { asyncPool } = require('../utils/pool');
 const { remove } = require('../fs/remove');
 const { minifyCss } = require('./css');
 const { minifyJs } = require('./javascript');
@@ -18,7 +20,15 @@ const formatBytes = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-const processPipeline = async (type, extension, minifierFn, sourceDir) => {
+const generateHash = (content, filePath) => {
+  return crypto
+    .createHash('md5')
+    .update(content + filePath)
+    .digest('hex')
+    .slice(0, 8);
+};
+
+const processPipeline = async (type, extension, minifierFn, sourceDir, inputs) => {
   console.log(`--- Starting ${type} Pipeline ---`);
 
   const files = await walk(sourceDir, extension);
@@ -36,36 +46,48 @@ const processPipeline = async (type, extension, minifierFn, sourceDir) => {
   let failCount = 0;
   const mappings = [];
 
-  await Promise.all(
-    targetFiles.map(async (filePath) => {
-      try {
-        const originalContent = await read(filePath);
-        const originalSize = Buffer.byteLength(originalContent, 'utf8');
+  const worker = async (filePath) => {
+    try {
+      const originalContent = await read(filePath);
+      const originalSize = Buffer.byteLength(originalContent, 'utf8');
 
-        const minifiedContent = await minifierFn(originalContent);
-        const newSize = Buffer.byteLength(minifiedContent, 'utf8');
+      const minifiedContent = await minifierFn(originalContent);
+      const newSize = Buffer.byteLength(minifiedContent, 'utf8');
 
-        const minFilePath = filePath.replace(new RegExp(`${extension}$`), `.min${extension}`);
-
-        await copy(filePath, `${filePath}.backup`);
-        await write(minFilePath, minifiedContent);
-        await remove(filePath);
-
-        mappings.push({ original: filePath, updated: minFilePath });
-
-        const saved = originalSize - newSize;
-        const percent = originalSize > 0 ? ((saved / originalSize) * 100).toFixed(1) : 0;
-
-        totalSaved += saved;
-        successCount++;
-
-        console.log(`${filePath} | Saved: ${formatBytes(saved)} (${percent}%)`);
-      } catch (error) {
-        failCount++;
-        console.error(`Failed to process ${filePath}: ${error.message}`);
+      let minFileName = `.min${extension}`;
+      if (inputs.hashFiles) {
+        const hash = generateHash(minifiedContent, filePath);
+        minFileName = `.${hash}.min${extension}`;
       }
-    }),
-  );
+
+      const minFilePath = filePath.replace(new RegExp(`${extension}$`), minFileName);
+
+      if (inputs.generateBackupFile) {
+        await copy(filePath, `${filePath}.backup`);
+      }
+
+      await write(minFilePath, minifiedContent);
+
+      if (!inputs.keepOriginalFile) {
+        await remove(filePath);
+      }
+
+      mappings.push({ original: filePath, updated: minFilePath });
+
+      const saved = originalSize - newSize;
+      const percent = originalSize > 0 ? ((saved / originalSize) * 100).toFixed(1) : 0;
+
+      totalSaved += saved;
+      successCount++;
+
+      console.log(`${filePath} | Saved: ${formatBytes(saved)} (${percent}%)`);
+    } catch (error) {
+      failCount++;
+      console.error(`Failed to process ${filePath}: ${error.message}`);
+    }
+  };
+
+  await asyncPool(targetFiles, worker, 10);
 
   console.log(`--- ${type} Pipeline Summary ---`);
   console.log(`Processed: ${successCount} successful, ${failCount} failed.`);
@@ -84,14 +106,20 @@ const runBuild = async () => {
   );
 
   if (inputs.minifyCss) {
-    const cssMappings = await processPipeline('CSS', '.css', minifyCss, inputs.sourceDir);
+    const cssMappings = await processPipeline('CSS', '.css', minifyCss, inputs.sourceDir, inputs);
     allMappings = allMappings.concat(cssMappings);
   } else {
     console.log('Skipping CSS Pipeline...\n');
   }
 
   if (inputs.minifyJs) {
-    const jsMappings = await processPipeline('JavaScript', '.js', minifyJs, inputs.sourceDir);
+    const jsMappings = await processPipeline(
+      'JavaScript',
+      '.js',
+      minifyJs,
+      inputs.sourceDir,
+      inputs,
+    );
     allMappings = allMappings.concat(jsMappings);
   } else {
     console.log('Skipping JavaScript Pipeline...\n');
